@@ -28,6 +28,9 @@ class Station
     #[ORM\OneToMany(mappedBy: 'station', targetEntity: Booking::class, orphanRemoval: true)]
     private $bookings;
 
+    #[ORM\Column(type: 'integer')]
+    private $number;
+
     public function __construct()
     {
         $this->bookings = new ArrayCollection();
@@ -100,6 +103,18 @@ class Station
                 $booking->setStation(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNumber(): ?int
+    {
+        return $this->number;
+    }
+
+    public function setNumber(int $number): self
+    {
+        $this->number = $number;
 
         return $this;
     }
