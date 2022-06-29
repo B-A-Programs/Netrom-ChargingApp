@@ -12,8 +12,18 @@ class StationFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        $locations = $manager->getRepository(Location::class)->find(2);
-        var_export($locations);
+        for ($i = 1; $i <= 9; $i++) {
+            $location = new Location();
+            $location->setName("Craiova Kaufland" . $i);
+            $location->setPrice(4.55);
+            $location->setLat(41.40338 - $i);
+            $location->setLon(2.17401 + $i);
+            $location->setStationsNumber(0);
+            $manager->persist($location);
+        }
+        $manager->flush();
+
+        $locations = $manager->getRepository(Location::class)->findAll();
 
         for ($i = 1; $i <= 100; $i++) {
             $station = new Station();
