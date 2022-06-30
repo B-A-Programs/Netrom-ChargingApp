@@ -1,0 +1,19 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
+        <h1>{{ location.name }}</h1>
+        <hr>
+        <div class="row m-1">
+            {% for station in stations %}
+                <div class="card post col-4 col-md-3">
+                    <div class="card-body">
+                        <h5 class="card-title mb-0">Station number: {{ station.number }}</h5>
+                        <span style="color: #444242;">Power: {{ station.power }}kWh | Price: {{ location.price }}$/kW</span>
+                        <p class="mb-0">Type: {{ station.type }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

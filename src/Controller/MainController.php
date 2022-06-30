@@ -24,10 +24,16 @@ class MainController extends AbstractController
         ]);
     }
 
-//    /**
-//     * @Route("/location/{name}", name="location")
-//     */
-//    public function location(ManagerRegistry $doctrine, $name): Response {
-//
-//    }
+    /**
+     * @Route("/location/{name}", name="location")
+     */
+    public function location(ManagerRegistry $doctrine, $name): Response {
+        $location = $doctrine->getRepository(Location::class)->findOneBy(array('name' => $name));
+        $stations = $doctrine->getRepository(Station::class)->findBy(array('Location' => $location));
+
+        return $this->render('location.html.twig', [
+            'stations'=>$stations,
+            'location'=>$location
+        ]);
+    }
 }
