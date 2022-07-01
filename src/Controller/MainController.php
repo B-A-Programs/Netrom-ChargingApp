@@ -11,29 +11,37 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class MainController extends AbstractController
 {
-    /**
-     * @Route("/", name="index")
-     */
-    public function index(ManagerRegistry $doctrine): Response {
-        $locations = $doctrine->getRepository(Location::class)->findAll();
-        $stations = $doctrine->getRepository(Station::class)->findAll();
+    #[Route("/{city}", name: "index")]
+    public function index(ManagerRegistry $doctrine, string $city = null): Response {
+        if($city) {
+            $locations = $doctrine->getRepository(Location::class)->findBy(array('city' => $city));
+            $title = 'Locations in ' . $city;
+        }
+        else {
+            $locations = $doctrine->getRepository(Location::class)->findAll();
+            $title = 'All locations';
+        }
+
+//        $cities = [];
+//        $locs = $doctrine->getRepository(Location::class)->findAll();
+//        foreach($locs as $loc) {
+//            $cities[] = $loc->getCity();
+//        }
 
         return $this->render('index.html.twig', [
             'locations'=>$locations,
-            'stations'=>$stations
+            'title'=>$title,
+//            'cities'=>$cities,
+            'form'=>
         ]);
     }
 
-    /**
-     * @Route("/location/{name}", name="location")
-     */
+    #[Route("/location/{name}", name: "location")]
     public function location(ManagerRegistry $doctrine, $name): Response {
         $location = $doctrine->getRepository(Location::class)->findOneBy(array('name' => $name));
-        $stations = $doctrine->getRepository(Station::class)->findBy(array('Location' => $location));
 
         return $this->render('location.html.twig', [
-            'stations'=>$stations,
-            'location'=>$location
+            'location'=>$location,
         ]);
     }
 }

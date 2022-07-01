@@ -30,7 +30,7 @@ class Location
     #[ORM\Column(type: 'float')]
     private $price;
 
-    #[ORM\OneToMany(mappedBy: 'LocationFixtures', targetEntity: Station::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'Location', targetEntity: Station::class, orphanRemoval: true)]
     private $stations;
 
     #[ORM\Column(type: 'string', length: 100)]

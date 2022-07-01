@@ -5,7 +5,7 @@
         <h1>{{ location.name }}</h1>
         <hr>
         <div class="row m-1">
-            {% for station in stations %}
+            {% for station in location.stations %}
                 <div class="card post col-4 col-md-3">
                     <div class="card-body">
                         <h5 class="card-title mb-0">Station number: {{ station.number }}</h5>
