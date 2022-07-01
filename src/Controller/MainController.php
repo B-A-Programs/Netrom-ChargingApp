@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Location;
 use App\Entity\Station;
+use App\Form\FilterFormType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,17 +23,18 @@ class MainController extends AbstractController
             $title = 'All locations';
         }
 
-//        $cities = [];
-//        $locs = $doctrine->getRepository(Location::class)->findAll();
-//        foreach($locs as $loc) {
-//            $cities[] = $loc->getCity();
-//        }
+        $form = $this->createForm(FilterFormType::class);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+        }
+
+        $cities = $doctrine->getRepository(Location::class)->findCities();
 
         return $this->render('index.html.twig', [
             'locations'=>$locations,
             'title'=>$title,
-//            'cities'=>$cities,
-            'form'=>
+            'cities'=>$cities,
+            'form'=> $form->createView()
         ]);
     }
 

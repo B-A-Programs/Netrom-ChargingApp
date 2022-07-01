@@ -2,10 +2,12 @@
 
 namespace App\Form;
 
+use App\Entity\Location;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\Loader\CallbackChoiceLoader;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -19,9 +21,21 @@ class FilterFormType extends AbstractType
     {
         $builder->add('cities', ChoiceType::class, [
             'choice_loader' => new CallbackChoiceLoader(function() {
-                return ["Barcelona","Craiova","Lisabona"];
+                $options = [];
+                $locations = $this->$manager->getRepository(Location::class)->findCities();
+                foreach($locations as $cities)
+                {
+                    foreach($cities as $city)
+                    {
+                        $options[] = [$city,];
+                    }
+                }
+                return $options;
             }),
-        ]);
+        ]) ->add('type', ChoiceType::class, [
+            'choices' => ['Select charging type' => -1, '0' => 0, '1' => 1, '2' => 2]
+        ]) ->add('submit', SubmitType::class)
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

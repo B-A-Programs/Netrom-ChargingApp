@@ -2,21 +2,7 @@
 
 {% block body %}
     <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
-        <form style="text-align: center;">
-            <div class="form-row">
-                <div class="form-group col-6">
-                    <select id="city" class="form-control" name="city">
-                        <option disabled selected>City</option>
-                    </select>
-                </div>
-                <div class="form-group col-6">
-                    <select id="charger" class="form-control" name="charger">
-                        <option disabled selected>Charger type</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary col-1" style="margin-left: 46%">Filter</button>
-            </div>
-        </form>
+        {{ form(form) }}
 
         <h1><strong>{{ title }}</strong></h1>
         <hr>
@@ -32,6 +18,38 @@
                 </div>
             {% endfor %}
         </div>
-
     </div>
+{% endblock %}
+
+{% block script2 %}
+    <script>
+        {#document.addEventListener('DOMContentLoaded', function() {#}
+        {#    let select = document.getElementById("filter_form_cities");#}
+        {#    {% for row in cities %}#}
+        {#        {% for city in row %}#}
+        {#            let op = document.createElement("option");#}
+        {#            op.textContent = {{ city }};#}
+        {#            op.value = {{ city }};#}
+        {#            select.appendChild(op);#}
+        {#        {% endfor %}#}
+        {#    {% endfor %}#}
+        {#    select.style.class = "red";#}
+
+        {#    document.querySelector("#filter_form").innerHTML = "experiment";#}
+        {#});#}
+        $(document).ready(function() {
+            let select = document.getElementById("filter_form_cities");
+            {% for row in cities %}
+            {% for city in row %}
+            let op = document.createElement("option");
+            op.textContent = {{ city }};
+            op.value = {{ city }};
+            select.appendChild(op);
+            {% endfor %}
+            {% endfor %}
+            select.style.class = "red";
+
+            document.querySelector("#filter_form").innerHTML = "experiment";
+        })
+    </script>
 {% endblock %}
