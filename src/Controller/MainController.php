@@ -29,7 +29,7 @@ class MainController extends AbstractController
                     }
                 }
             }
-            $title = 'Locations in ' . $_GET['city'] . 'with charger type ' . $_GET['charger'];
+            $title = 'Locations in ' . $_GET['city'] . ' with charger type ' . $_GET['charger'];
         }
         elseif(array_key_exists('city', $_GET)) {
             $locations = $doctrine->getRepository(Location::class)->findBy(array('city' => $_GET['city']));
