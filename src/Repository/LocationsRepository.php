@@ -41,9 +41,7 @@ class LocationsRepository extends ServiceEntityRepository
 
     public function findCities(): array {
         $conn = $this->getEntityManager()->getConnection();
-        $sql = '
-            SELECT DISTINCT city FROM Location ORDER BY city;
-        ';
+        $sql = 'SELECT DISTINCT city FROM Location ORDER BY city;';
         $stmt = $conn->prepare($sql);
         $resultSet = $stmt->executeQuery();
 

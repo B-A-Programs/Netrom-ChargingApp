@@ -4,28 +4,40 @@ namespace App\Controller;
 
 use App\Entity\Location;
 use App\Entity\Station;
-use App\Form\FilterFormType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Request;
 
 class MainController extends AbstractController
 {
-    #[Route("/{city}", name: "index")]
+    #[Route("/", name: "index")]
     public function index(ManagerRegistry $doctrine, string $city = null): Response {
-        if($city) {
-            $locations = $doctrine->getRepository(Location::class)->findBy(array('city' => $city));
-            $title = 'Locations in ' . $city;
+        if(array_key_exists('city', $_GET) && array_key_exists('charger', $_GET)) {
+            $locs = $doctrine->getRepository(Location::class)->findBy(array('city' => $_GET['city']));
+            $locations = [];
+            foreach($locs as $location)
+            {
+                $stations = $location->getStations();
+                foreach($stations as $station)
+                {
+                    if($station->getType() == $_GET['charger'])
+                    {
+                        $locations[] = $location;
+                        break;
+                    }
+                }
+            }
+            $title = 'Locations in ' . $_GET['city'] . 'with charger type ' . $_GET['charger'];
+        }
+        elseif(array_key_exists('city', $_GET)) {
+            $locations = $doctrine->getRepository(Location::class)->findBy(array('city' => $_GET['city']));
+            $title = 'Locations in ' . $_GET['city'];
         }
         else {
             $locations = $doctrine->getRepository(Location::class)->findAll();
             $title = 'All locations';
-        }
-
-        $form = $this->createForm(FilterFormType::class);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
         }
 
         $cities = $doctrine->getRepository(Location::class)->findCities();
@@ -33,8 +45,7 @@ class MainController extends AbstractController
         return $this->render('index.html.twig', [
             'locations'=>$locations,
             'title'=>$title,
-            'cities'=>$cities,
-            'form'=> $form->createView()
+            'cities'=>$cities
         ]);
     }
 
