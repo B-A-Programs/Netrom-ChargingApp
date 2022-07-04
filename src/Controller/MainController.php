@@ -4,7 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Location;
 use App\Entity\Station;
+use App\Form\FilterFormType;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use phpDocumentor\Reflection\Types\Null_;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,39 +16,38 @@ use Symfony\Component\HttpFoundation\Request;
 class MainController extends AbstractController
 {
     #[Route("/", name: "index")]
-    public function index(ManagerRegistry $doctrine, string $city = null): Response {
-        if(array_key_exists('city', $_GET) && array_key_exists('charger', $_GET)) {
-            $locs = $doctrine->getRepository(Location::class)->findBy(array('city' => $_GET['city']));
-            $locations = [];
-            foreach($locs as $location)
+    public function index(Request $request, ManagerRegistry $doctrine): Response {
+        $form = $this->createForm(FilterFormType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $filter_city = $form->getData()['cities'];
+            $filter_charger = $form->getData()['type'];
+            if($filter_city == "-1" || $filter_charger == "-1")
             {
-                $stations = $location->getStations();
-                foreach($stations as $station)
-                {
-                    if($station->getType() == $_GET['charger'])
-                    {
-                        $locations[] = $location;
-                        break;
-                    }
-                }
+                return $this->render('index.html.twig', [
+                    'message' => 'You must select both a city and a charging type when filtering',
+                    'title' => 'All locations',
+                    'locations' => $doctrine->getRepository(Location::class)->findAll(),
+                    'form' => $form->createView()
+                ]);
             }
-            $title = 'Locations in ' . $_GET['city'] . ' with charger type ' . $_GET['charger'];
+
+            $locations = $doctrine->getRepository(Location::class)->filterCityCharger($filter_city, $filter_charger);
+            $title = 'Locations in ' . $filter_city . ' with charger type ' . $filter_charger;
         }
-        elseif(array_key_exists('city', $_GET)) {
-            $locations = $doctrine->getRepository(Location::class)->findBy(array('city' => $_GET['city']));
-            $title = 'Locations in ' . $_GET['city'];
-        }
-        else {
+        else
+        {
             $locations = $doctrine->getRepository(Location::class)->findAll();
             $title = 'All locations';
         }
 
-        $cities = $doctrine->getRepository(Location::class)->findCities();
-
         return $this->render('index.html.twig', [
+            'form'=>$form->createView(),
             'locations'=>$locations,
             'title'=>$title,
-            'cities'=>$cities
+            'message'=>'Nonexistent'
         ]);
     }
 
@@ -55,6 +57,15 @@ class MainController extends AbstractController
 
         return $this->render('location.html.twig', [
             'location'=>$location,
+        ]);
+    }
+
+    #[Route("/station/{id}", name: "station")]
+    public function station(ManagerRegistry $doctrine, $id): Response {
+        $station = $doctrine->getRepository(Station::class)->findOneBy(array('id' => $id));
+
+        return $this->render('station.html.twig', [
+            'station'=>$station,
         ]);
     }
 }

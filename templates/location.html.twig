@@ -2,16 +2,18 @@
 
 {% block body %}
     <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
-        <h1>{{ location.name }}</h1>
+        <h1><strong>{{ location.name }}</strong></h1>
         <hr>
         <div class="row m-1">
             {% for station in location.stations %}
                 <div class="card post col-4 col-md-3">
-                    <div class="card-body">
-                        <h5 class="card-title mb-0">Station number: {{ station.number }}</h5>
-                        <span style="color: #444242;">Power: {{ station.power }}kWh | Price: {{ location.price }}$/kW</span>
-                        <p class="mb-0">Type: {{ station.type }}</p>
-                    </div>
+                    <a href="{{ path('station', {'id': station.id}) }}" style="text-decoration: none; color: black;">
+                        <div class="card-body">
+                            <h5 class="card-title mb-0">Station number: {{ station.number }}</h5>
+                            <span style="color: #444242;">Power: {{ station.power }}kWh | Price: {{ location.price }}$/kW</span>
+                            <p class="mb-0">Charger: {{ station.type }}</p>
+                        </div>
+                    </a>
                 </div>
             {% endfor %}
         </div>

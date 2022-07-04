@@ -1,0 +1,10 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
+        <h1>Station number {{ station.number }} from {{ station.Location.name }}</h1>
+        <div style="color: grey; font-size: 20px;">Power: {{ station.power }}kWh | Price: {{ station.Location.price }}$/kW | Charger: {{ station.type }}</div>
+        <hr>
+
+    </div>
+{% endblock %}
