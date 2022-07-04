@@ -32,7 +32,7 @@ class FilterFormType extends AbstractType
             }),
         ]) ->add('type', ChoiceType::class, [
             'choices' => ['Select charging type' => -1, 'Type 0' => 'Type 0', 'Type 1' => 'Type 1', 'Type 2' => 'Type 2']
-        ]) ->add('submit', SubmitType::class)
+        ]) ->add('filter', SubmitType::class)
         ;
     }
 

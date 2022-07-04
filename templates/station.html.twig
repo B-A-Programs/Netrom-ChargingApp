@@ -6,5 +6,11 @@
         <div style="color: grey; font-size: 20px;">Power: {{ station.power }}kWh | Price: {{ station.Location.price }}$/kW | Charger: {{ station.type }}</div>
         <hr>
 
+        <h3>Make a booking</h3>
+        {{ form_start(form) }}
+            {{ form_row(form.start) }}
+            {{ form_row(form.end) }}
+            {{ form_row(form.book, {'attr': {'class': 'btn btn-primary col-1 mt-3'}}) }}
+        {{ form_end(form) }}
     </div>
 {% endblock %}

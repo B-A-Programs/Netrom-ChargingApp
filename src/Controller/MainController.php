@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Location;
 use App\Entity\Station;
+use App\Form\BookingFormType;
 use App\Form\FilterFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -61,11 +62,15 @@ class MainController extends AbstractController
     }
 
     #[Route("/station/{id}", name: "station")]
-    public function station(ManagerRegistry $doctrine, $id): Response {
+    public function station(Request $request, ManagerRegistry $doctrine, $id): Response {
         $station = $doctrine->getRepository(Station::class)->findOneBy(array('id' => $id));
+
+        $form = $this->createForm(BookingFormType::class);
+        $form->handleRequest($request);
 
         return $this->render('station.html.twig', [
             'station'=>$station,
+            'form'=>$form->createView()
         ]);
     }
 }
