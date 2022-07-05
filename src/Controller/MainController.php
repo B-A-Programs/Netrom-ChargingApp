@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Booking;
 use App\Entity\Location;
 use App\Entity\Station;
 use App\Form\BookingFormType;
@@ -68,9 +69,52 @@ class MainController extends AbstractController
         $form = $this->createForm(BookingFormType::class);
         $form->handleRequest($request);
 
+        $bookings = $doctrine->getRepository(Booking::class)->findBy(array('station' => $station), array('chargestart' => 'ASC'));
+
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $start = $form->getData()['start'];
+            $end = $form->getData()['end'];
+            $totalsecdifference = strtotime($end->format('Y-m-d h:i:s')) - strtotime($start->format('Y-m-d h:i:s'));
+            if($totalsecdifference <= 0 || $totalsecdifference > 5400)
+            {
+                return $this->render('station.html.twig', [
+                    'station'=>$station,
+                    'form'=>$form->createView(),
+                    'bookings'=>$bookings,
+                    'message'=>"Start time must be less than end time and reservations can't exceed an hour."
+                ]);
+            }
+
+            foreach($bookings as $booking)
+            {
+                if(($booking->getChargestart() > $start && $booking->getChargestart() < $end) || ($booking->getChargeend() > $start && $booking->getChargeend() < $end))
+                {
+                    return $this->render('station.html.twig', [
+                        'station'=>$station,
+                        'form'=>$form->createView(),
+                        'bookings'=>$bookings,
+                        'message'=>'There is another booking in that timeframe!'
+                    ]);
+                }
+            }
+
+            $booking = new Booking();
+            $booking->setChargestart($start);
+            $booking->setChargeend($end);
+            $booking->setStation($station);
+
+            $doctrine->getManager()->persist($booking);
+            $doctrine->getManager()->flush();
+            $bookings = $doctrine->getRepository(Booking::class)->findBy(array('station' => $station), array('chargestart' => 'ASC'));
+        }
+
         return $this->render('station.html.twig', [
             'station'=>$station,
-            'form'=>$form->createView()
+            'form'=>$form->createView(),
+            'bookings'=>$bookings,
+            'message'=>'Nonexistent'
         ]);
     }
 }

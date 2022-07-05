@@ -14,8 +14,10 @@ class BookingFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('start', DateTimeType::class)
-            ->add('end', DateTimeType::class)
+            ->add('start', DateTimeType::class, array(
+                'widget' => 'single_text',))
+            ->add('end', DateTimeType::class, array(
+                'widget' => 'single_text',))
             ->add('book', SubmitType::class)
         ;
     }
