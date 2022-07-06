@@ -39,6 +39,11 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
+    public function getActiveBookings($station_id)
+    {
+        $sql = "SELECT b FROM App\Entity\Booking b INNER JOIN App\Entity\Station s WHERE s.id = ?1 AND b.station = s AND b.chargestart >= ?2";
+        return $this->getEntityManager()->createQuery($sql)->setParameter(1, $station_id)->setParameter(2, new \DateTimeImmutable())->getResult();
+    }
 //    /**
 //     * @return Booking[] Returns an array of Booking objects
 //     */

@@ -69,7 +69,7 @@ class MainController extends AbstractController
         $form = $this->createForm(BookingFormType::class);
         $form->handleRequest($request);
 
-        $bookings = $doctrine->getRepository(Booking::class)->findBy(array('station' => $station), array('chargestart' => 'ASC'));
+        $bookings = $doctrine->getRepository(Booking::class)->getActiveBookings($id);
 
 
         if($form->isSubmitted() && $form->isValid())
@@ -86,10 +86,21 @@ class MainController extends AbstractController
                     'message'=>"Start time must be less than end time and reservations can't exceed an hour."
                 ]);
             }
+            if($start < new \DateTimeImmutable())
+            {
+                return $this->render('station.html.twig', [
+                    'station'=>$station,
+                    'form'=>$form->createView(),
+                    'bookings'=>$bookings,
+                    'message'=>'Booking must not be made in the past.'
+                ]);
+            }
 
             foreach($bookings as $booking)
             {
-                if(($booking->getChargestart() > $start && $booking->getChargestart() < $end) || ($booking->getChargeend() > $start && $booking->getChargeend() < $end))
+                $bstart = $booking->getChargestart();
+                $bend = $booking->getChargeend();
+                if(($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end))
                 {
                     return $this->render('station.html.twig', [
                         'station'=>$station,
@@ -107,7 +118,7 @@ class MainController extends AbstractController
 
             $doctrine->getManager()->persist($booking);
             $doctrine->getManager()->flush();
-            $bookings = $doctrine->getRepository(Booking::class)->findBy(array('station' => $station), array('chargestart' => 'ASC'));
+            $bookings = $doctrine->getRepository(Booking::class)->getActiveBookings($id);
         }
 
         return $this->render('station.html.twig', [
