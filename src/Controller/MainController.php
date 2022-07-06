@@ -83,7 +83,7 @@ class MainController extends AbstractController
                     'station'=>$station,
                     'form'=>$form->createView(),
                     'bookings'=>$bookings,
-                    'message'=>"Start time must be less than end time and reservations can't exceed an hour."
+                    'message'=>"Start time must be less than end time and reservations can't exceed an hour and a half."
                 ]);
             }
             if($start < new \DateTimeImmutable())

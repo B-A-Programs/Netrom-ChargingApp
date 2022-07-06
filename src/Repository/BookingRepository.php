@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Booking;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * @extends ServiceEntityRepository<Booking>
@@ -41,7 +42,7 @@ class BookingRepository extends ServiceEntityRepository
 
     public function getActiveBookings($station_id)
     {
-        $sql = "SELECT b FROM App\Entity\Booking b INNER JOIN App\Entity\Station s WHERE s.id = ?1 AND b.station = s AND b.chargestart >= ?2";
+        $sql = "SELECT b FROM App\Entity\Booking b INNER JOIN App\Entity\Station s WHERE s.id = ?1 AND b.station = s AND b.chargeend > ?2 ORDER BY b.chargestart";;
         return $this->getEntityManager()->createQuery($sql)->setParameter(1, $station_id)->setParameter(2, new \DateTimeImmutable())->getResult();
     }
 //    /**
