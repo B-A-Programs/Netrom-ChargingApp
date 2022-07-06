@@ -6,9 +6,12 @@ use App\Repository\UsersRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
-class User
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+class User implements UserInterface, \Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,11 +24,11 @@ class User
     #[ORM\Column(type: 'string', length: 100)]
     private $email;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private $city;
-
-    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: Car::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Car::class, orphanRemoval: true)]
     private $cars;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private $password;
 
     public function __construct()
     {
@@ -61,18 +64,6 @@ class User
         return $this;
     }
 
-    public function getCity(): ?string
-    {
-        return $this->city;
-    }
-
-    public function setCity(string $city): self
-    {
-        $this->city = $city;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Car>
      */
@@ -85,7 +76,7 @@ class User
     {
         if (!$this->cars->contains($car)) {
             $this->cars[] = $car;
-            $car->setUserId($this);
+            $car->setUser($this);
         }
 
         return $this;
@@ -95,11 +86,38 @@ class User
     {
         if ($this->cars->removeElement($car)) {
             // set the owning side to null (unless already changed)
-            if ($car->getUserId() === $this) {
-                $car->setUserId(null);
+            if ($car->getUser() === $this) {
+                $car->setUser(null);
             }
         }
 
         return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getRoles(): array
+    {
+        return ['user'];
+    }
+
+    public function eraseCredentials()
+    {
+
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->getId();
     }
 }
