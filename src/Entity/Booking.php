@@ -14,7 +14,7 @@ class Booking
     private $id;
 
     #[ORM\ManyToOne(targetEntity: Car::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: false)]
     private $car;
 
     #[ORM\ManyToOne(targetEntity: Station::class, inversedBy: 'bookings')]

@@ -2,8 +2,11 @@
 
 namespace App\Form;
 
+use App\Entity\Car;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\ChoiceList\Loader\CallbackChoiceLoader;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -27,6 +30,16 @@ class BookingFormType extends AbstractType
                 'widget' => 'single_text',))
             ->add('end', DateTimeType::class, array(
                 'widget' => 'single_text',))
+            ->add('car', ChoiceType::class, [
+                'choice_loader' => new CallbackChoiceLoader(function() {
+                    $cars = $this->entityManager->getRepository(Car::class)->findBy(array('user'=>$this->security->getUser()));
+                    $cars_dict = ['Select car' => '-1'];
+                    foreach($cars as $car) {
+                        $cars_dict[$car->getLicensePlate()] = $car->getLicensePlate();
+                    }
+                    return $cars_dict;
+                }),
+            ])
             ->add('book', SubmitType::class)
         ;
     }

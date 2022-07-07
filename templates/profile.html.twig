@@ -8,6 +8,21 @@
         <h1><strong>{{ app.user.name }}</strong></h1>
         <div style="color: grey; font-size: 20px;">{{ app.user.userIdentifier }}</div>
         <hr>
+        {% if bookings is not empty %}
+            <h2>Your bookings</h2>
+            <div class="row m-1">
+                {% for book in bookings %}
+                    <div class="card post col-6 col-md-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-0">Location: {{ book.station.location.name }} - Car: {{ book.car.licensePlate }}</h5>
+                            <span style="color: grey">Station number: {{ book.station.number }}</span>
+                            <p class="mb-0">{{ book.chargestart|date("d/m/Y h:i", false) }} - {{ book.chargeend|date("d/m/Y h:i", false) }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <hr>
+        {% endif %}
         {% if app.user.getCars is not empty %}
             <h2>Your cars</h2>
             <div class="row m-1">
@@ -30,6 +45,7 @@
                 </div>
                 <div class="form-group col-6">
                     <select class="form-control" name="chrtype" required>
+                        <option selected value="er">Select a charging type</option>
                         <option value="0">Type 0</option>
                         <option value="1">Type 1</option>
                         <option value="2">Type 2</option>

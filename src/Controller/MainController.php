@@ -80,10 +80,22 @@ class MainController extends AbstractController
             $license = $_REQUEST['license'];
             $type = $_REQUEST['chrtype'];
 
-            if(!$license || $type == "-1") {
+            if(!$license || $type == "er") {
                 return $this->render('profile.html.twig', [
-                    'message'=>'Wrong input'
+                    'bookings'=>$doctrine->getRepository(Booking::class)->getUserBookings($user),
+                    'message'=>'Wrong input. Please select charging type and include a valid license plate.'
                 ]);
+            }
+            $cars = $doctrine->getRepository(Car::class)->findAll();
+            foreach($cars as $car)
+            {
+                if($car->getLicensePlate() == $license)
+                {
+                    return $this->render('profile.html.twig', [
+                        'bookings'=>$doctrine->getRepository(Booking::class)->getUserBookings($user),
+                        'message'=>'A car with that license plate already exists. Make sure you typed it correctly.'
+                    ]);
+                }
             }
 
             $car = new Car();
@@ -95,6 +107,7 @@ class MainController extends AbstractController
         }
 
         return $this->render('profile.html.twig', [
+            'bookings'=>$doctrine->getRepository(Booking::class)->getUserBookings($user),
             'message'=>'Nonexistent'
         ]);
     }
@@ -122,6 +135,8 @@ class MainController extends AbstractController
         {
             $start = $form->getData()['start'];
             $end = $form->getData()['end'];
+            $car = $doctrine->getRepository(Car::class)->findOneBy(array('license_plate'=>$form->getData()['car']));
+
             $totalsecdifference = strtotime($end->format('Y-m-d h:i:s')) - strtotime($start->format('Y-m-d h:i:s'));
             if($totalsecdifference <= 0 || $totalsecdifference > 5400)
             {
@@ -157,10 +172,21 @@ class MainController extends AbstractController
                 }
             }
 
+            if($car->getChargeType() != $station->getType())
+            {
+                return $this->render('station.html.twig', [
+                    'station'=>$station,
+                    'form'=>$form->createView(),
+                    'bookings'=>$bookings,
+                    'message'=>'This car has a different charging type from the station. Please select a different station or a car with charging ' . $station->getType(),
+                ]);
+            }
+
             $booking = new Booking();
             $booking->setChargestart($start);
             $booking->setChargeend($end);
             $booking->setStation($station);
+            $booking->setCar($car);
 
             $doctrine->getManager()->persist($booking);
             $doctrine->getManager()->flush();
