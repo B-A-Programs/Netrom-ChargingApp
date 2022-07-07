@@ -27,6 +27,9 @@
                         <a class="nav-link" href={{ path('app_register') }}>Register</a>
                     </li>
                 {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href={{ path('profile') }}><strong>{{ app.user.name }}</strong></a>
+                    </li>
                     <li>
                         <a class="nav-link" href={{ path('app_logout') }}>Log out</a>
                     </li>

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Booking;
+use App\Entity\Car;
 use App\Entity\Location;
 use App\Entity\Station;
 use App\Form\BookingFormType;
@@ -14,9 +15,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 
 class MainController extends AbstractController
 {
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     #[Route("/", name: "index")]
     public function index(Request $request, ManagerRegistry $doctrine): Response {
         $form = $this->createForm(FilterFormType::class);
@@ -49,6 +58,43 @@ class MainController extends AbstractController
             'form'=>$form->createView(),
             'locations'=>$locations,
             'title'=>$title,
+            'message'=>'Nonexistent'
+        ]);
+    }
+
+    #[Route("/profile", name: "profile")]
+    public function profile(ManagerRegistry $doctrine): Response {
+        $user = $this->security->getUser();
+
+        if(!$user)
+        {
+            return $this->render('index.html.twig', [
+                'form'=>$form = $this->createForm(FilterFormType::class)->createView(),
+                'locations'=>$doctrine->getRepository(Location::class)->findAll(),
+                'title'=>'All locations',
+                'message'=>'You must be logged in to access profile page!'
+            ]);
+        }
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $license = $_REQUEST['license'];
+            $type = $_REQUEST['chrtype'];
+
+            if(!$license || $type == "-1") {
+                return $this->render('profile.html.twig', [
+                    'message'=>'Wrong input'
+                ]);
+            }
+
+            $car = new Car();
+            $car->setLicensePlate($license);
+            $car->setChargeType("Type " . $type);
+            $car->setUser($user);
+            $doctrine->getManager()->persist($car);
+            $doctrine->getManager()->flush();
+        }
+
+        return $this->render('profile.html.twig', [
             'message'=>'Nonexistent'
         ]);
     }
