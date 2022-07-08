@@ -2,7 +2,7 @@
 
 {% block body %}
     <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
-        <h1><strong>{{ location.name }}</strong></h1>
+        <h1><strong>{{ location.name }} - {{ location.city }}</strong></h1>
         <hr>
         <div class="row m-1">
             {% for station in location.stations %}

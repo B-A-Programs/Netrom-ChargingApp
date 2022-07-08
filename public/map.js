@@ -11,12 +11,24 @@ function GenerateMap(longitude, latitude, zoom)
     return map;
 }
 
+var iconOptions = {
+    iconUrl: '/images/station-icon-14.jpg',
+    iconSize: [50, 50]
+}
+
+var customIcon = L.icon(iconOptions);
+
 function PlaceMarkersMap(map, longitude, latitude, name)
 {
+    var markerOptions = {
+        clickable: true,
+        icon: customIcon
+    }
+
     let layer = L.marker({
         lon: longitude,
         lat: latitude
-    }).addTo(map);
+    }, markerOptions).addTo(map);
     layer.on('click', function () {
         window.location.href = `/location/${name}`;
     });
