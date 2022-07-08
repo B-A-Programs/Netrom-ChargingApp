@@ -1,9 +1,18 @@
 {% extends "base.html.twig" %}
 
 {% block script %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+          crossorigin="">
+
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+            integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+            crossorigin=""></script>
+
+    <!-- Script for filter button -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById("btn_filter").onclick = function(e) {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById("btn_filter").onclick = function (e) {
                 e.preventDefault();
                 document.getElementById("filter").style.display = 'block';
                 this.style.display = 'none';
@@ -17,18 +26,21 @@
         <div class="alert alert-danger" role="alert">{{ message }}</div>
     {% endif %}
     <div class="container-fluid" style="padding: 20px 40px; text-align: center">
-        <button id="btn_filter" type="button" class="btn btn-secondary">Filter stations</button>
-        <div id="filter" style="display: none;">
+
+        <div id="map" style="width: 70%; height: 500px; margin-left: 15%;"></div>
+
+        <button id="btn_filter" type="button" class="btn btn-secondary mt-3">Filter stations</button>
+        <div class="mt-3" id="filter" style="display: none;">
             {{ form_start(form) }}
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        {{ form_widget(form.cities, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                    <div class="form-group col-6">
-                        {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                    </div>
+            <div class="form-row">
+                <div class="form-group col-6">
+                    {{ form_widget(form.cities, {'attr': {'class': 'form-control'}}) }}
                 </div>
-                {{ form_row(form.filter, {'attr': {'class': 'btn btn-primary col-1'}}) }}
+                <div class="form-group col-6">
+                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                </div>
+            </div>
+            {{ form_row(form.filter, {'attr': {'class': 'btn btn-primary col-1'}}) }}
             {{ form_end(form) }}
         </div>
 
@@ -40,7 +52,8 @@
                     <a href="{{ path('location', {'name': loc.name}) }}" style="color: black; text-decoration: none;">
                         <div class="card-body">
                             <h3 class="card-title mb-0"><strong>{{ loc.name }}</strong></h3>
-                            <h5 style="color: rgb(63, 59, 59);">City: {{ loc.city }} | Number of stations: {{ loc.getStationsNumber() }} | Price: {{ loc.price }}$/kW</h5>
+                            <h5 style="color: rgb(63, 59, 59);">City: {{ loc.city }} | Number of
+                                stations: {{ loc.getStationsNumber() }} | Price: {{ loc.price }}$/kW</h5>
                         </div>
                     </a>
                 </div>
@@ -50,4 +63,15 @@
             <div>SORRY! Looks like there are no charging locations that meet your requested specifications!</div>
         {% endif %}
     </div>
+    <script src="/map.js"></script>
+    <script>
+        navigator.geolocation.getCurrentPosition(showPosition);
+        function showPosition(position) {
+            var map = GenerateMap(position.coords.longitude, position.coords.latitude, 13);
+
+            {% for loc in locations %}
+                PlaceMarkersMap(map, {{ loc.lon }}, {{ loc.lat }}, "{{ loc.name }}");
+            {% endfor %}
+        }
+    </script>
 {% endblock %}

@@ -13,11 +13,13 @@
             <div class="row m-1">
                 {% for book in bookings %}
                     <div class="card post col-6 col-md-4">
+                        <a href="{{ path('station', {'id': book.station.id}) }}" style="text-decoration: none; color: black;">
                         <div class="card-body">
                             <h5 class="card-title mb-0">Location: {{ book.station.location.name }} - Car: {{ book.car.licensePlate }}</h5>
                             <span style="color: grey">Station number: {{ book.station.number }}</span>
                             <p class="mb-0">{{ book.chargestart|date("d/m/Y h:i", false) }} - {{ book.chargeend|date("d/m/Y h:i", false) }}</p>
                         </div>
+                        </a>
                     </div>
                 {% endfor %}
             </div>
