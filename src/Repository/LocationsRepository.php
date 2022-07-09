@@ -52,6 +52,11 @@ class LocationsRepository extends ServiceEntityRepository
         $sql = 'SELECT l FROM App\Entity\Location l INNER JOIN App\Entity\Station s WHERE l.city = ?1 AND s.type = ?2 AND s.Location = l';
         return $this->getEntityManager()->createQuery($sql)->setParameter(1, $city)->setParameter(2, $charger)->getResult();
     }
+
+    public function filterCharger($charger): array {
+        $sql = 'SELECT l FROM App\Entity\Location l INNER JOIN App\Entity\Station s WHERE s.type = ?1 AND s.Location = l';
+        return $this->getEntityManager()->createQuery($sql)->setParameter(1, $charger)->getResult();
+    }
     /**
      * @return Location[] Returns an array of LocationFixtures objects
      */

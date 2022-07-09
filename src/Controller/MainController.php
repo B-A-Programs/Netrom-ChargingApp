@@ -35,12 +35,28 @@ class MainController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $filter_city = $form->getData()['cities'];
             $filter_charger = $form->getData()['type'];
-            if ($filter_city == "-1" || $filter_charger == "-1") {
+            if ($filter_city == "-1" && $filter_charger == "-1") {
                 return $this->render('index.html.twig', [
-                    'message' => 'You must select both a city and a charging type when filtering',
+                    'message' => 'You must select a city and/or a charging type when filtering',
                     'title' => 'All locations',
                     'locations' => $doctrine->getRepository(Location::class)->findAll(),
                     'form' => $form->createView()
+                ]);
+            }
+            elseif ($filter_city != "-1" && $filter_charger == "-1") {
+                return $this->render('index.html.twig', [
+                    'title' => 'Locations in ' . $filter_city,
+                    'locations' => $doctrine->getRepository(Location::class)->findBy(['city'=>$filter_city]),
+                    'form' => $form->createView(),
+                    'message' => 'Nonexistent'
+                ]);
+            }
+            elseif ($filter_charger != "-1" && $filter_city == "-1") {
+                return $this->render('index.html.twig', [
+                    'title' => 'Locations with chargers of ' . $filter_charger,
+                    'locations' => $doctrine->getRepository(Location::class)->filterCharger($filter_charger),
+                    'form' => $form->createView(),
+                    'message' => 'Nonexistent'
                 ]);
             }
 
