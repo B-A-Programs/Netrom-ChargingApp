@@ -356,6 +356,22 @@ class MainController extends AbstractController
                 ]);
             }
 
+            $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($car->getUser());
+            foreach($userbookings as $booked)
+            {
+                if($booked->getCar() != $car || $booked == $booking)
+                    continue;
+                $bstart = $booked->getChargestart();
+                $bend = $booked->getChargeend();
+                if(($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+                    return $this->render('edit.html.twig', [
+                        'booking'=>$booking,
+                        'form'=>$form->createView(),
+                        'message'=>'You have another booking for this car in the same time. Try deleting it before!'
+                    ]);
+                }
+            }
+
             $bookings = $doctrine->getRepository(Booking::class)->getActiveBookings($station->getId());
             foreach ($bookings as $booked) {
                 if($booked == $booking)
