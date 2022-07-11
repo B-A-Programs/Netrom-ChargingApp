@@ -29,6 +29,11 @@ class Car
     #[ORM\OneToMany(mappedBy: 'car', targetEntity: Booking::class, orphanRemoval: true)]
     private $bookings;
 
+    public function __toString(): string
+    {
+        return $this->license_plate;
+    }
+
     public function __construct()
     {
         $this->bookings = new ArrayCollection();

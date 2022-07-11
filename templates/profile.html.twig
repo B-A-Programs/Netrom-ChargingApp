@@ -18,6 +18,12 @@
                             <h5 class="card-title mb-0">Location: {{ book.station.location.name }} - Car: {{ book.car.licensePlate }}</h5>
                             <span style="color: grey">Station number: {{ book.station.number }}</span>
                             <p class="mb-0">{{ book.chargestart|date("d/m/Y h:i", false) }} - {{ book.chargeend|date("d/m/Y h:i", false) }}</p>
+                            <form action="{{ path('deleteBooking', {'id': book.id}) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger mt-2" style="width: 100px;">Delete</button>
+                            </form>
+                            <form action="{{ path('editBooking', {'id': book.id}) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-success mt-2" style="width: 100px;">Edit</button>
+                            </form>
                         </div>
                         </a>
                     </div>

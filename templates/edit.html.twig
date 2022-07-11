@@ -1,0 +1,27 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
+        {% if message != 'Nonexistent' %}
+            <div class="alert alert-danger" role="alert">{{ message }}</div>
+        {% endif %}
+        <h1>Edit your booking</h1>
+        <h3>Station number {{ booking.station.number }} from {{ booking.station.Location.name }}</h3>
+
+        {{ form_start(form) }}
+        <div class="form-row">
+            <div class="form-group col-4">
+                {{ form_row(form.chargestart, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group col-4">
+                {{ form_row(form.chargeend, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group col-4">
+                {{ form_row(form.car, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+        {{ form_row(form.book, {'attr': {'class': 'btn btn-primary col-1'}}) }}
+        {{ form_end(form) }}
+
+    </div>
+{% endblock %}
