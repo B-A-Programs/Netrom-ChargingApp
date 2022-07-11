@@ -9,15 +9,30 @@ use App\Entity\Review;
 use App\Entity\Station;
 use App\Form\BookingFormType;
 use App\Form\EditBookingFormType;
-use App\Form\FilterFormType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Form\FilterFormType;;
 use Doctrine\Persistence\ManagerRegistry;
-use phpDocumentor\Reflection\Types\Null_;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
+
+//function vincentyGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000): float|int
+//{
+//    // convert from degrees to radians
+//    $latFrom = deg2rad($latitudeFrom);
+//    $lonFrom = deg2rad($longitudeFrom);
+//    $latTo = deg2rad($latitudeTo);
+//    $lonTo = deg2rad($longitudeTo);
+//
+//    $lonDelta = $lonTo - $lonFrom;
+//    $a = pow(cos($latTo) * sin($lonDelta), 2) +
+//        pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+//    $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+//
+//    $angle = atan2(sqrt($a), $b);
+//    return $angle * $earthRadius;
+//}
 
 class MainController extends AbstractController
 {
@@ -76,6 +91,17 @@ class MainController extends AbstractController
             'message' => 'Nonexistent'
         ]);
     }
+
+//    #[Route("/proximity", name: "proximity")]
+//    public function proximity(ManagerRegistry $doctrine)
+//    {
+//        return $this->render('index.html.twig', [
+//            'form' => $this->createForm(FilterFormType::class)->createView(),
+//            'locations' => $doctrine->getRepository(Location::class)->findAll(),
+//            'title' => 'All locations',
+//            'message' => 'Nonexistent'
+//        ]);
+//    }
 
     #[Route("/profile", name: "profile", methods: ['GET'])]
     public function profile(ManagerRegistry $doctrine): Response
