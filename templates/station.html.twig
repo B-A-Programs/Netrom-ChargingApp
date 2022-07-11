@@ -38,10 +38,14 @@
                     </div>
                 {% endfor %}
             </div>
+        {% else %}
+            <hr>
+            <h3><strong>Active bookings</strong></h3>
+            <p><strong>There are no active bookings for this station!</strong></p>
         {% endif %}
 
         {% if app.user %}
-            <hr>
+            <hr style="border-color: rgb(23,8,8); border-width: 2px;">
             <h3><strong>Leave a review</strong></h3>
             <form action="{{ path('review', {"id": station.id}) }}" method="post">
                 <div style="display: flex; flex-direction: row; justify-content: space-evenly;">
