@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Booking;
 use App\Entity\Car;
 use App\Entity\Location;
+use App\Entity\Review;
 use App\Entity\Station;
 use App\Form\BookingFormType;
 use App\Form\EditBookingFormType;
@@ -162,6 +163,7 @@ class MainController extends AbstractController
                     'form' => $form->createView(),
                     'bookings' => $bookings,
                     'message' => 'You must select a car to make your reservation.',
+                    'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                 ]);
             }
 
@@ -171,7 +173,8 @@ class MainController extends AbstractController
                     'station' => $station,
                     'form' => $form->createView(),
                     'bookings' => $bookings,
-                    'message' => "Start time must be less than end time and reservations can't exceed an hour and a half."
+                    'message' => "Start time must be less than end time and reservations can't exceed an hour and a half.",
+                    'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                 ]);
             }
             if ($start < new \DateTimeImmutable()) {
@@ -179,7 +182,8 @@ class MainController extends AbstractController
                     'station' => $station,
                     'form' => $form->createView(),
                     'bookings' => $bookings,
-                    'message' => 'Booking must not be made in the past.'
+                    'message' => 'Booking must not be made in the past.',
+                    'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                 ]);
             }
 
@@ -191,7 +195,8 @@ class MainController extends AbstractController
                         'station' => $station,
                         'form' => $form->createView(),
                         'bookings' => $bookings,
-                        'message' => 'There is another booking in that timeframe!'
+                        'message' => 'There is another booking in that timeframe!',
+                        'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                     ]);
                 }
             }
@@ -208,7 +213,8 @@ class MainController extends AbstractController
                         'station' => $station,
                         'form' => $form->createView(),
                         'bookings' => $bookings,
-                        'message' => 'You have another booking for this car in the same time. Try deleting it before!'
+                        'message' => 'You have another booking for this car in the same time. Try deleting it before!',
+                        'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                     ]);
                 }
             }
@@ -219,6 +225,7 @@ class MainController extends AbstractController
                     'form' => $form->createView(),
                     'bookings' => $bookings,
                     'message' => 'This car has a different charging type from the station. Please select a different station or a car with charging ' . $station->getType(),
+                    'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                 ]);
             }
 
@@ -237,7 +244,8 @@ class MainController extends AbstractController
             'station' => $station,
             'form' => $form->createView(),
             'bookings' => $bookings,
-            'message' => 'Nonexistent'
+            'message' => 'Nonexistent',
+            'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
         ]);
     }
 
@@ -371,6 +379,44 @@ class MainController extends AbstractController
             'booking'=>$booking,
             'form'=>$form->createView(),
             'message'=>'Nonexistent'
+        ]);
+    }
+
+    #[Route("/review/{id}", name: "review", methods: ["POST"])]
+    public function review(Request $request, ManagerRegistry $doctrine, $id): Response
+    {
+        $user = $this->security->getUser();
+
+        $rating = $request->get('rating');
+        $review = $request->get('review');
+        $station = $doctrine->getRepository(Station::class)->findOneBy(array('id'=>$id));
+
+        if(!$user || $review == '' || $rating == null)
+        {
+            return $this->render('station.html.twig', [
+                'station' => $station,
+                'form' => $this->createForm(BookingFormType::class)->createView(),
+                'bookings' => $doctrine->getRepository(Booking::class)->findBy(array('station'=>$station)),
+                'message' => 'Something went wrong with your review. Make sure you filled in all the fields and are logged in.',
+                'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station),  array('id'=>'DESC'))
+            ]);
+        }
+
+        $rev = new Review();
+        $rev->setUser($user);
+        $rev->setStation($station);
+        $rev->setRating($rating);
+        $rev->setText($review);
+
+        $doctrine->getManager()->persist($rev);
+        $doctrine->getManager()->flush();
+
+        return $this->render('station.html.twig', [
+            'station' => $station,
+            'form' => $this->createForm(BookingFormType::class)->createView(),
+            'bookings' => $doctrine->getRepository(Booking::class)->findBy(array('station'=>$station)),
+            'message' => 'Nonexistent',
+            'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station),  array('id'=>'DESC'))
         ]);
     }
 }

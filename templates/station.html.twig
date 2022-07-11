@@ -10,7 +10,7 @@
         <hr>
 
         {% if app.user %}
-            <h3>Make a booking</h3>
+            <h3><strong>Make a booking</strong></h3>
             {{ form_start(form) }}
                 <div class="form-row">
                     <div class="form-group col-4">
@@ -25,21 +25,52 @@
                 </div>
                 {{ form_row(form.book, {'attr': {'class': 'btn btn-primary col-1'}}) }}
             {{ form_end(form) }}
-            <hr>
         {% endif %}
-        <h3>Active bookings</h3>
-        <div class="row m-1">
-            {% for booking in bookings %}
-                <div class="card col-4 post">
+        {% if not bookings is empty %}
+            <hr>
+            <h3><strong>Active bookings</strong></h3>
+            <div class="row m-1">
+                {% for booking in bookings %}
+                    <div class="card col-4 post">
+                        <div class="card-body pb-2">
+                            <h5>({{ booking.chargestart|date("d/m/Y h:i", false) }}) - ({{ booking.chargeend|date("d/m/Y h:i", false) }})</h5>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if app.user %}
+            <hr>
+            <h3><strong>Leave a review</strong></h3>
+            <form action="{{ path('review', {"id": station.id}) }}" method="post">
+                <div style="display: flex; flex-direction: row; justify-content: space-evenly;">
+                    <select class="form-control" style="width: 65px; height: 65px;" name="rating">
+                        <option selected disabled value="-1">#</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <textarea class="form-control" name="review" placeholder="Write your review here"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary col-1 mt-3">Review</button>
+            </form>
+        {% endif %}
+
+        {% if not reviews is empty %}
+            <hr>
+            <h3><strong>Reviews</strong></h3>
+            {% for review in reviews %}
+                <div class="card col-12 post">
                     <div class="card-body pb-2">
-                        <h5>({{ booking.chargestart|date("d/m/Y h:i", false) }}) - ({{ booking.chargeend|date("d/m/Y h:i", false) }})</h5>
+                        <h2>{{ review.user.name }}</h2>
+                        <span style="color: #575454;">{{ review.rating }}/5</span>
+                        <p>{{ review.text }}</p>
                     </div>
                 </div>
             {% endfor %}
-        </div>
-
-        {% if bookings is empty %}
-            <strong>No active bookings at this station</strong>
         {% endif %}
     </div>
 {% endblock %}
