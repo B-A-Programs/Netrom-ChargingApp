@@ -37,6 +37,9 @@
                 {% for car in app.user.getCars %}
                     <div class="card post col-4 col-md-3">
                         <div class="card-body">
+                            <form action="{{ path('deleteCar', {'id': car.id}) }}" style="display: inline; float: right;">
+                                <button type="submit" class="btn btn-danger mt-2" style="width: 100px;">Delete</button>
+                            </form>
                             <h5 class="card-title mb-0">License plate: {{ car.licensePlate }}</h5>
                             <p class="mb-0">Charging type: {{ car.chargeType }}</p>
                         </div>

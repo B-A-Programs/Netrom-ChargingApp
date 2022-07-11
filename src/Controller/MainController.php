@@ -196,6 +196,23 @@ class MainController extends AbstractController
                 }
             }
 
+            $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($car->getUser());
+            foreach($userbookings as $booking)
+            {
+                if($booking->getCar() != $car)
+                    continue;
+                $bstart = $booking->getChargestart();
+                $bend = $booking->getChargeend();
+                if(($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+                    return $this->render('station.html.twig', [
+                        'station' => $station,
+                        'form' => $form->createView(),
+                        'bookings' => $bookings,
+                        'message' => 'You have another booking for this car in the same time. Try deleting it before!'
+                    ]);
+                }
+            }
+
             if ($car->getChargeType() != $station->getType() && $car->getUser() === $this->security->getUser()) {
                 return $this->render('station.html.twig', [
                     'station' => $station,
@@ -244,6 +261,26 @@ class MainController extends AbstractController
         return $this->redirectToRoute('profile');
     }
 
+    #[Route('/deleteCar/{id}', name: "deleteCar")]
+    public function deleteCar(ManagerRegistry $doctrine, $id): Response
+    {
+        $car = $doctrine->getRepository(Car::class)->findOneBy(array('id'=>$id));
+        if($this->security->getUser() !== $car->getUser())
+        {
+            return $this->render('index.html.twig', [
+                'form' => $form = $this->createForm(FilterFormType::class)->createView(),
+                'locations' => $doctrine->getRepository(Location::class)->findAll(),
+                'title' => 'All locations',
+                'message' => 'The car you are trying to remove is not yours!'
+            ]);
+        }
+
+        $doctrine->getManager()->remove($car);
+        $doctrine->getManager()->flush();
+
+        return $this->redirectToRoute('profile');
+    }
+
     #[Route('/editBooking/{id}', name: "editBooking")]
     public function editBooking(Request $request, ManagerRegistry $doctrine, Booking $booking): Response
     {
@@ -283,6 +320,22 @@ class MainController extends AbstractController
                     'form'=>$form->createView(),
                     'message'=>'Bookings must not be made in the past.'
                 ]);
+            }
+
+            $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($car->getUser());
+            foreach($userbookings as $booked)
+            {
+                if($booked->getCar() != $car)
+                    continue;
+                $bstart = $booked->getChargestart();
+                $bend = $booked->getChargeend();
+                if(($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+                    return $this->render('edit.html.twig', [
+                        'booking'=>$booking,
+                        'form'=>$form->createView(),
+                        'message'=>'You have another booking for this car in the same time. Try deleting it before!'
+                    ]);
+                }
             }
 
             $bookings = $doctrine->getRepository(Booking::class)->getActiveBookings($station->getId());
