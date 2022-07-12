@@ -4,7 +4,9 @@ namespace App\Entity;
 
 use App\Repository\BookingRepository;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
@@ -28,6 +30,24 @@ class Booking
     {
         return $this->getCar()->getChargeType() == $this->getStation()->getType();
     }
+
+//    #[Assert\IsTrue(message: "You have another booking for this car in the same time. Try deleting it before!")]
+//    public function isOnlyBooking(ManagerRegistry $doctrine): bool
+//    {
+//        $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($this->car->getUser());
+//        foreach($userbookings as $booking)
+//        {
+//            if($booking->getCar() != $this->car)
+//                continue;
+//            $bstart = $booking->getChargestart();
+//            $bend = $booking->getChargeend();
+//            if(($bstart <= $this->getChargestart() && $bend >= $this->getChargestart()) || ($bstart <= $this->getChargeend() && $bend >= $this->getChargeend()) || ($bstart >= $this->getChargestart() && $bend <= $this->getChargeend())) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
