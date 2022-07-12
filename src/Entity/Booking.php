@@ -3,11 +3,32 @@
 namespace App\Entity;
 
 use App\Repository\BookingRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 class Booking
 {
+    #[Assert\IsTrue(message: 'You must select a car to make your reservation.')]
+    public function isCarPresent(): bool
+    {
+        return $this->car != null;
+    }
+
+    #[Assert\IsTrue(message: "Start time must be less than end time, reservations can't exceed an hour and a half and bookings cannot be made in the past.")]
+    public function isTimeCorrect(): bool
+    {
+        $totalsecdifference = strtotime($this->chargeend->format('Y-m-d h:i:s')) - strtotime($this->getChargestart()->format('Y-m-d h:i:s'));
+        return $this->chargestart < $this->chargeend && $totalsecdifference < 5400 && $this->chargestart > new DateTimeImmutable();
+    }
+
+    #[Assert\IsTrue(message: "Car and station have different charging types.")]
+    public function isTypeSimilar(): bool
+    {
+        return $this->getCar()->getChargeType() == $this->getStation()->getType();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
