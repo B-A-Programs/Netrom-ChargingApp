@@ -9,6 +9,9 @@
         <h3>Station number {{ booking.station.number }} from {{ booking.station.Location.name }}</h3>
 
         {{ form_start(form) }}
+        {% if form_errors(form) %}
+            <div class="alert alert-danger pb-0" role="alert">{{ form_errors(form) }}</div>
+        {% endif %}
         <div class="form-row">
             <div class="form-group col-4">
                 {{ form_label(form.chargestart, 'Start') }}

@@ -2,12 +2,16 @@
 
 {% block body %}
     <div class="container-fluid" style="padding: 20px 40px; text-align: center;">
-        {% if message != 'Nonexistent' %}
-            <div class="alert alert-danger" role="alert">{{ message }}</div>
-        {% endif %}
         <h1>Station number {{ station.number }} from {{ station.Location.name }}</h1>
         <div style="color: grey; font-size: 20px;">Power: {{ station.power }}kWh | Price: {{ station.Location.price }}$/kW | Charger: {{ station.type }}</div>
         <hr>
+
+        {% for error in errors %}
+            <div class="alert alert-danger" role="alert">{{ error.message }}</div>
+        {% endfor %}
+        {% if message != 'Nonexistent' %}
+            <div class="alert alert-danger" role="alert">{{ message }}</div>
+        {% endif %}
 
         {% if app.user %}
             <h3><strong>Make a booking</strong></h3>

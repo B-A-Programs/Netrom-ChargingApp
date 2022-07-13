@@ -51,6 +51,18 @@ class BookingRepository extends ServiceEntityRepository
         $sql = "SELECT b FROM App\Entity\Booking b INNER JOIN App\Entity\Car c WHERE c = b.car AND c.user = ?1 AND b.chargeend > ?2 ORDER BY b.chargestart";
         return $this->getEntityManager()->createQuery($sql)->setParameter(1, $user)->setParameter(2,  new \DateTimeImmutable())->getResult();
     }
+
+    public function getOverlappingBookings($station, $start, $end)
+    {
+        $sql = "SELECT b FROM App\Entity\Booking b WHERE b.station = ?3 AND ((b.chargestart <= ?1 AND b.chargeend >= ?1) OR (b.chargestart <= ?2 AND b.chargeend >= ?2) OR (b.chargestart >= ?1 AND b.chargeend <= ?2))";
+        return $this->getEntityManager()->createQuery($sql)->setParameter(1, $start)->setParameter(2,  $end)->setParameter(3, $station)->getResult();
+    }
+
+    public function getCarOverlap($car, $start, $end)
+    {
+        $sql = "SELECT b FROM App\Entity\Booking b WHERE b.car = ?3 AND ((b.chargestart <= ?1 AND b.chargeend >= ?1) OR (b.chargestart <= ?2 AND b.chargeend >= ?2) OR (b.chargestart >= ?1 AND b.chargeend <= ?2))";
+        return $this->getEntityManager()->createQuery($sql)->setParameter(1, $start)->setParameter(2,  $end)->setParameter(3, $car)->getResult();
+    }
 //    /**
 //     * @return Booking[] Returns an array of Booking objects
 //     */

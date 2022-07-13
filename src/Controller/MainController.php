@@ -18,23 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-//function vincentyGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000): float|int
-//{
-//    // convert from degrees to radians
-//    $latFrom = deg2rad($latitudeFrom);
-//    $lonFrom = deg2rad($longitudeFrom);
-//    $latTo = deg2rad($latitudeTo);
-//    $lonTo = deg2rad($longitudeTo);
-//
-//    $lonDelta = $lonTo - $lonFrom;
-//    $a = pow(cos($latTo) * sin($lonDelta), 2) +
-//        pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
-//    $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
-//
-//    $angle = atan2(sqrt($a), $b);
-//    return $angle * $earthRadius;
-//}
-
 class MainController extends AbstractController
 {
     private $security;
@@ -92,17 +75,6 @@ class MainController extends AbstractController
             'message' => 'Nonexistent'
         ]);
     }
-
-//    #[Route("/proximity", name: "proximity")]
-//    public function proximity(ManagerRegistry $doctrine)
-//    {
-//        return $this->render('index.html.twig', [
-//            'form' => $this->createForm(FilterFormType::class)->createView(),
-//            'locations' => $doctrine->getRepository(Location::class)->findAll(),
-//            'title' => 'All locations',
-//            'message' => 'Nonexistent'
-//        ]);
-//    }
 
     #[Route("/profile", name: "profile", methods: ['GET'])]
     public function profile(ManagerRegistry $doctrine): Response
@@ -184,34 +156,30 @@ class MainController extends AbstractController
             $end = $form->getData()['end'];
             $car = $doctrine->getRepository(Car::class)->findOneBy(array('license_plate' => $form->getData()['car']));
 
-            foreach ($bookings as $booking) {
-                $bstart = $booking->getChargestart();
-                $bend = $booking->getChargeend();
-                if (($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+            if(!$car == null) {
+                $overlap = $doctrine->getRepository(Booking::class)->getOverlappingBookings($station, $start, $end);
+                if(count($overlap) > 0)
+                {
                     return $this->render('station.html.twig', [
-                        'station' => $station,
-                        'form' => $form->createView(),
-                        'bookings' => $bookings,
-                        'message' => 'There is another booking in that timeframe!',
-                        'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
-                    ]);
+                            'station' => $station,
+                            'form' => $form->createView(),
+                            'bookings' => $bookings,
+                            'message' => 'There is another booking in that timeframe!',
+                            'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station' => $station), array('id' => 'DESC')),
+                            'errors' => []
+                        ]);
                 }
-            }
 
-            $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($car->getUser());
-            foreach($userbookings as $booking)
-            {
-                if($booking->getCar() != $car)
-                    continue;
-                $bstart = $booking->getChargestart();
-                $bend = $booking->getChargeend();
-                if(($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+                $overlap = $doctrine->getRepository(Booking::class)->getCarOverlap($car, $start, $end);
+                if(count($overlap) > 0)
+                {
                     return $this->render('station.html.twig', [
                         'station' => $station,
                         'form' => $form->createView(),
                         'bookings' => $bookings,
                         'message' => 'You have another booking for this car in the same time. Try deleting it before!',
-                        'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
+                        'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station' => $station), array('id' => 'DESC')),
+                        'errors' => []
                     ]);
                 }
             }
@@ -229,7 +197,8 @@ class MainController extends AbstractController
                     'station' => $station,
                     'form' => $form->createView(),
                     'bookings' => $bookings,
-                    'message' => (string) $errors,
+                    'errors' => $errors,
+                    'message' => 'Nonexistent',
                     'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
                 ]);
             }
@@ -244,7 +213,8 @@ class MainController extends AbstractController
             'form' => $form->createView(),
             'bookings' => $bookings,
             'message' => 'Nonexistent',
-            'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
+            'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC')),
+            'errors' => []
         ]);
     }
 
@@ -313,51 +283,33 @@ class MainController extends AbstractController
             $end = $newbooking->getChargeend();
             $car = $newbooking->getCar();
 
-            $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($car->getUser());
-            foreach($userbookings as $booked)
+            $overlap = $doctrine->getRepository(Booking::class)->getCarOverlap($car, $start, $end);
+            if(count($overlap) > 0)
             {
-                if($booked->getCar() != $car || $booked == $booking)
-                    continue;
-                $bstart = $booked->getChargestart();
-                $bend = $booked->getChargeend();
-                if(($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+                if($overlap[0] != $booking || count($overlap) > 1)
                     return $this->render('edit.html.twig', [
                         'booking'=>$booking,
-                        'form'=>$form->createView(),
-                        'message'=>'You have another booking for this car in the same time. Try deleting it before!'
+                        'form' => $form->createView(),
+                        'message' => 'You have another booking for this car in the same time. Try deleting it before!',
+                        'errors' => []
                     ]);
-                }
             }
 
             $bookings = $doctrine->getRepository(Booking::class)->getActiveBookings($station->getId());
-            foreach ($bookings as $booked) {
-                if($booked == $booking)
-                    continue;
-
-                $bstart = $booked->getChargestart();
-                $bend = $booked->getChargeend();
-                if (($bstart <= $start && $bend >= $start) || ($bstart <= $end && $bend >= $end) || ($bstart >= $start && $bend <= $end)) {
+            $overlap = $doctrine->getRepository(Booking::class)->getOverlappingBookings($station, $start, $end);
+            if(count($overlap) > 0)
+            {
+                if($overlap[0] != $booking || count($overlap) > 1)
                     return $this->render('edit.html.twig', [
                         'booking'=>$booking,
-                        'form'=>$form->createView(),
-                        'message'=>'There is another booking in that timeframe!'
+                        'form' => $form->createView(),
+                        'message' => 'There is another booking in that timeframe!',
+                        'errors' => []
                     ]);
-                }
             }
 
-            $booking = $newbooking;
+            $booking->setChargestart($start); $booking->setChargeend($end); $booking->setCar($car);
 
-            $errors = $validator->validate($booking);
-            if (count($errors) > 0)
-            {
-                return $this->render('station.html.twig', [
-                    'station' => $station,
-                    'form' => $form->createView(),
-                    'bookings' => $bookings,
-                    'message' => (string) $errors,
-                    'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station), array('id'=>'DESC'))
-                ]);
-            }
             $doctrine->getManager()->persist($booking);
             $doctrine->getManager()->flush();
             return $this->redirectToRoute('profile');
@@ -365,7 +317,8 @@ class MainController extends AbstractController
         return $this->render('edit.html.twig', [
             'booking'=>$booking,
             'form'=>$form->createView(),
-            'message'=>'Nonexistent'
+            'message'=>'Nonexistent',
+            'errors' => []
         ]);
     }
 
@@ -385,7 +338,8 @@ class MainController extends AbstractController
                 'form' => $this->createForm(BookingFormType::class)->createView(),
                 'bookings' => $doctrine->getRepository(Booking::class)->findBy(array('station'=>$station)),
                 'message' => 'Something went wrong with your review. Make sure you filled in all the fields and are logged in.',
-                'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station),  array('id'=>'DESC'))
+                'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station),  array('id'=>'DESC')),
+                'errors' => []
             ]);
         }
 
@@ -398,12 +352,6 @@ class MainController extends AbstractController
         $doctrine->getManager()->persist($rev);
         $doctrine->getManager()->flush();
 
-        return $this->render('station.html.twig', [
-            'station' => $station,
-            'form' => $this->createForm(BookingFormType::class)->createView(),
-            'bookings' => $doctrine->getRepository(Booking::class)->findBy(array('station'=>$station)),
-            'message' => 'Nonexistent',
-            'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station),  array('id'=>'DESC'))
-        ]);
+        return $this->redirectToRoute('station', ['id'=>$station->getId()]);
     }
 }

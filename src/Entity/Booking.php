@@ -28,25 +28,12 @@ class Booking
     #[Assert\IsTrue(message: "Car and station have different charging types.")]
     public function isTypeSimilar(): bool
     {
+        if($this->getCar() == null) {
+            return false;
+        }
+
         return $this->getCar()->getChargeType() == $this->getStation()->getType();
     }
-
-//    #[Assert\IsTrue(message: "You have another booking for this car in the same time. Try deleting it before!")]
-//    public function isOnlyBooking(ManagerRegistry $doctrine): bool
-//    {
-//        $userbookings = $doctrine->getRepository(Booking::class)->getUserBookings($this->car->getUser());
-//        foreach($userbookings as $booking)
-//        {
-//            if($booking->getCar() != $this->car)
-//                continue;
-//            $bstart = $booking->getChargestart();
-//            $bend = $booking->getChargeend();
-//            if(($bstart <= $this->getChargestart() && $bend >= $this->getChargestart()) || ($bstart <= $this->getChargeend() && $bend >= $this->getChargeend()) || ($bstart >= $this->getChargestart() && $bend <= $this->getChargeend())) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
 
 
     #[ORM\Id]
