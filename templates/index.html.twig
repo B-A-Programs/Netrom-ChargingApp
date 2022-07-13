@@ -30,6 +30,7 @@
         <div id="map" style="width: 70%; height: 500px; margin-left: 15%;"></div>
 
         <button id="btn_filter" type="button" class="btn btn-secondary mt-3">Filter stations</button>
+        <a href="{{ path('proximity') }}"><button id="btn_filter" type="button" class="btn btn-info mt-3">Close stations</button></a>
         <div class="mt-3" id="filter" style="display: none;">
             {{ form_start(form) }}
             <div class="form-row">

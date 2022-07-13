@@ -11,12 +11,33 @@ use App\Form\BookingFormType;
 use App\Form\EditBookingFormType;
 use App\Form\FilterFormType;;
 use Doctrine\Persistence\ManagerRegistry;
+use Geocoder\Provider\FreeGeoIp\FreeGeoIp;
+use Http\Adapter\Guzzle7\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Geocoder\Query\GeocodeQuery;
+use Geocoder\Query\ReverseQuery;
+
+function vincentyGreatCircleDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000): float|int
+{
+    // convert from degrees to radians
+    $latFrom = deg2rad($latitudeFrom);
+    $lonFrom = deg2rad($longitudeFrom);
+    $latTo = deg2rad($latitudeTo);
+    $lonTo = deg2rad($longitudeTo);
+
+    $lonDelta = $lonTo - $lonFrom;
+    $a = pow(cos($latTo) * sin($lonDelta), 2) +
+        pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+    $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+
+    $angle = atan2(sqrt($a), $b);
+    return $angle * $earthRadius;
+}
 
 class MainController extends AbstractController
 {
@@ -25,6 +46,30 @@ class MainController extends AbstractController
     public function __construct(Security $security)
     {
         $this->security = $security;
+    }
+
+    #[Route("/proximity", name: "proximity")]
+    public function proximity(ManagerRegistry $doctrine)
+    {
+        $httpClient = new Client();
+        $response = $httpClient->sendRequest(New \GuzzleHttp\Psr7\Request('GET', 'https://api.ipbase.com/v2/info?apikey=ISh4pHR7dmSclZFiETUMvq9Tme8SnQdCOL5Nb9LN&ip=82.77.165.60'));
+        $result = json_decode($response->getBody()->getContents(), true);
+        $lat = $result["data"]["location"]["latitude"];
+        $lon = $result["data"]["location"]["longitude"];
+
+        $locations = $doctrine->getRepository(Location::class)->findAll();
+        $validLocations = [];
+        foreach($locations as $location)
+        {
+            if(vincentyGreatCircleDistance($lat, $lon, $location->getLat(), $location->getLon()) < 20000)
+                $validLocations[] = $location;
+        }
+        return $this->render('index.html.twig', [
+            'message' => 'Nonexistent',
+            'title' => 'Locations in close proximity to you.',
+            'locations' => $validLocations,
+            'form' => $this->createForm(FilterFormType::class)->createView()
+        ]);
     }
 
     #[Route("/", name: "index")]
