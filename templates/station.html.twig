@@ -37,7 +37,7 @@
                 {% for booking in bookings %}
                     <div class="card col-4 post">
                         <div class="card-body pb-2">
-                            <h5>({{ booking.chargestart|date("d/m/Y H:i", false) }}) - ({{ booking.chargeend|date("d/m/Y H:i", false) }})</h5>
+                            <h5>{{ booking.chargestart|date("d/m/Y H:i", false) }} - {{ booking.chargeend|date("d/m/Y H:i", false) }}</h5>
                         </div>
                     </div>
                 {% endfor %}

@@ -378,14 +378,7 @@ class MainController extends AbstractController
 
         if(!$user || $review == '' || $rating == null)
         {
-            return $this->render('station.html.twig', [
-                'station' => $station,
-                'form' => $this->createForm(BookingFormType::class)->createView(),
-                'bookings' => $doctrine->getRepository(Booking::class)->findBy(array('station'=>$station)),
-                'message' => 'Something went wrong with your review. Make sure you filled in all the fields and are logged in.',
-                'reviews' => $doctrine->getRepository(Review::class)->findBy(array('station'=>$station),  array('id'=>'DESC')),
-                'errors' => []
-            ]);
+            return $this->redirectToRoute('station', ['id'=>$station->getId()]);
         }
 
         $rev = new Review();
