@@ -29,9 +29,9 @@
                 </div>
                 {{ form_row(form.book, {'attr': {'class': 'btn btn-primary col-1'}}) }}
             {{ form_end(form) }}
+            <hr>
         {% endif %}
         {% if not bookings is empty %}
-            <hr>
             <h3><strong>Active bookings</strong></h3>
             <div class="row m-1">
                 {% for booking in bookings %}
@@ -43,7 +43,6 @@
                 {% endfor %}
             </div>
         {% else %}
-            <hr>
             <h3><strong>Active bookings</strong></h3>
             <p><strong>There are no active bookings for this station!</strong></p>
         {% endif %}
